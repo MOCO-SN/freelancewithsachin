@@ -4,28 +4,20 @@ All rights reserved.
 """
 
 import json
-import os
 import requests
-
-
-def _get_config(key):
-    return os.environ.get(key, "")
+from flask import current_app
 
 
 def send_message(data):
-    access_token = _get_config("ACCESS_TOKEN")
-    phone_number_id = _get_config("PHONE_NUMBER_ID")
-    version = _get_config("VERSION", "v18.0")
-
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Bearer {access_token}",
+        "Authorization": f"Bearer {current_app.config['ACCESS_TOKEN']}",
     }
 
     url = (
         f"https://graph.facebook.com/"
-        f"{version}/"
-        f"{phone_number_id}/messages"
+        f"{current_app.config['VERSION']}/"
+        f"{current_app.config['PHONE_NUMBER_ID']}/messages"
     )
 
     try:
