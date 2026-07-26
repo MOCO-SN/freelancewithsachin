@@ -14,7 +14,7 @@ import flask
 
 from message_helper import get_text_message_input, send_message
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='public', static_url_path='')
 
 app.config["ACCESS_TOKEN"] = os.environ.get("ACCESS_TOKEN", "")
 app.config["PHONE_NUMBER_ID"] = os.environ.get("PHONE_NUMBER_ID", "")
