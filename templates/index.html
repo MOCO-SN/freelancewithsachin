@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script type="module" src="https://unpkg.com/ionicons@8.0.13/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@8.0.13/dist/ionicons/ionicons.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mocosn · freelance build & edit</title>
+  <link rel="icon" href="/static/favicon.png" type="image/png">
+  <!-- FontAwesome Icons (free) -->
+  <link rel="stylesheet" href="/static/css/index.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+  <div class="container">
+
+    <!-- NAV -->
+<nav class="navbar">
+      <div class="brand">
+        <div class="brand-icon"><img src="/static/favicon.png" alt="logo"/></div>
+      </div>
+      <!-- <div class="tagline"><i class="fas fa-code"></i> Developments</div> -->
+      <a href="#" class="mobile-menu-btn"><ion-icon name="menu-outline"></ion-icon></a>
+    </nav>
+
+    <!-- HERO -->
+    <div class="hero">
+      <h1>build, create, edit <br>with <span class="hero-brand">mocosn</span></h1>
+      <p><i class="fas fa-magic" style="color:#6e46e6;"></i>  website · app · video editor — book me for your project</p>
+      <button class="cta-button" id="openBookingBtn"><i class="fas fa-calendar-check"></i> Book now</button>
+    </div>
+
+    <!-- SERVICES -->
+    <div class="section-title">
+      <i class="fas fa-bolt"></i> 
+      <span>what I deliver</span>
+    </div>
+   <div class="card-grid">
+      {% for service in services %}
+      <div class="service-card">
+        <img src="{{ service.thumbnail }}" class="card-img-top" alt="{{service.category}}"
+          style="border-radius: 20px; object-fit: cover; height: 200px;" />
+        <div class="service-body">
+          <h3>{{ service.title }}</h3>
+          <p>{{ service.description }}</p>
+          <p><b>Price:</b> {{ service.price }}</p>
+          <p><b>Est. Duration:</b> {{ service.duration }}</p>
+          <form method="POST" action="/book">
+            <input type="hidden" name="id" value="{{service.id}}" />
+            <button type="submit" class="book-btn"><i class="fas fa-pen-fancy"></i> Book now</button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+
+    <!-- BOOKING PANEL (toggle) -->
+    <div class="booking-panel" id="bookingPanel">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+        <h2><i class="fas fa-pencil-alt"></i> Book a session</h2>
+        <button class="close-booking" id="closeBookingBtn"><i class="fas fa-times"></i> close</button>
+      </div>
+      <p><i class="fas fa-user-astronaut" style="color:#6e46e6;"></i>  tell me about your project — I’ll reply within 24h</p>
+      <form id="bookingForm" method="POST" action="/book">
+        <div class="form-row">
+          <div class="form-group">
+            <label><i class="fas fa-user"></i> Full name</label>
+            <input type="text" id="fullName" name="name" placeholder="e.g. Alex Rivera" required>
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-envelope"></i> Email</label>
+            <input type="email" id="emailAddr" name="email" placeholder="alex@domain.com" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label><i class="fas fa-cog"></i> Service</label>
+            <select id="serviceSelect" name="service">
+              <option value="Website">🌐 Website</option>
+              <option value="App">📱 App</option>
+              <option value="Video editor">🎬 Video editor</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-calendar-alt"></i> Preferred date</label>
+            <input type="date" id="prefDate" name="date">
+          </div>
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-comment-dots"></i> Project brief</label>
+          <textarea rows="3" id="projectBrief" name="brief" placeholder="Describe your idea, goals, style…"></textarea>
+        </div>
+        <button type="submit" class="submit-btn"><i class="fas fa-paper-plane"></i> send booking request</button>
+      </form>
+      <p style="margin-top: 0.8rem; font-size: 0.9rem; color: #7a6e9e;"><i class="fas fa-check-circle" style="color:#6e46e6;"></i>  no payment required now — we’ll discuss details</p>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+      <div class="brand-small"><i class="fas fa-cube"></i> mocosn · freelance</div>
+      <div class="badge"><i class="fas fa-check"></i> available for projects</div>
+      <div class="social">
+        <i class="fab fa-instagram"></i>
+        <i class="fab fa-github"></i>
+        <i class="fab fa-linkedin-in"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- toast notification -->
+  <div id="toastMessage" class="toast-msg"><i class="fas fa-check-circle" style="color:#a78bfa;"></i> <span id="toastText">Booking sent!</span></div>
+
+  <script>
+    (function() {
+      const bookingPanel = document.getElementById('bookingPanel');
+      const openBtn = document.getElementById('openBookingBtn');
+      const closeBtn = document.getElementById('closeBookingBtn');
+      const bookBtns = document.querySelectorAll('.book-btn');
+      const serviceSelect = document.getElementById('serviceSelect');
+      const form = document.getElementById('bookingForm');
+      const toast = document.getElementById('toastMessage');
+      const toastText = document.getElementById('toastText');
+
+      // open panel
+      function openPanel(service) {
+        if (service) {
+          // set select value if it matches
+          const options = serviceSelect.options;
+          for (let opt of options) {
+            if (opt.value === service) {
+              serviceSelect.value = service;
+              break;
+            }
+          }
+        }
+        bookingPanel.classList.add('open');
+        bookingPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
+      function closePanel() {
+        bookingPanel.classList.remove('open');
+      }
+
+      // event listeners for open
+      openBtn.addEventListener('click', () => openPanel(null));
+
+      bookBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          const service = btn.closest('.service-card').querySelector('h3').innerText;
+          const serviceMap = {
+            'Website Development': 'Website',
+            'App Development': 'App',
+            'Video Editing': 'Video editor'
+          };
+          openPanel(serviceMap[service] || null);
+        });
+      });
+
+      closeBtn.addEventListener('click', closePanel);
+
+      // close if click outside? optional: click on backdrop not implemented to keep simple
+
+      // form submit
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const name = document.getElementById('fullName').value.trim();
+        const email = document.getElementById('emailAddr').value.trim();
+        const service = serviceSelect.value;
+        const date = document.getElementById('prefDate').value;
+        const brief = document.getElementById('projectBrief').value.trim();
+
+        if (!name || !email) {
+          toastText.innerText = '⚠️ name and email are required';
+          toast.classList.add('show');
+          setTimeout(() => toast.classList.remove('show'), 3000);
+          return;
+        }
+
+        if (!email.includes('@') || !email.includes('.')) {
+          toastText.innerText = '⚠️ please enter a valid email';
+          toast.classList.add('show');
+          setTimeout(() => toast.classList.remove('show'), 3000);
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('name', name);
+        formData.append('email', email);
+        formData.append('service', service);
+        if (date) formData.append('date', date);
+        if (brief) formData.append('brief', brief);
+
+        try {
+          const response = await fetch('/book', {
+            method: 'POST',
+            body: formData
+          });
+
+          if (response.ok) {
+            toastText.innerText = `✅ booking for ${service} sent! I'll get back to you.`;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 4500);
+
+            document.getElementById('fullName').value = '';
+            document.getElementById('emailAddr').value = '';
+            document.getElementById('prefDate').value = '';
+            document.getElementById('projectBrief').value = '';
+          } else {
+            toastText.innerText = '⚠️ failed to send booking';
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+          }
+        } catch (err) {
+          toastText.innerText = '⚠️ failed to send booking';
+          toast.classList.add('show');
+          setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+      });
+
+      // toast close on click
+      toast.addEventListener('click', function() {
+        toast.classList.remove('show');
+      });
+
+      // close booking panel if user clicks outside? we want to avoid accidental close.
+      // optional: we can close when escape key pressed
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && bookingPanel.classList.contains('open')) {
+          closePanel();
+        }
+      });
+
+      // prefill service from URL? not needed, but we set an example.
+      // if there is a param ?service=video for example
+      const urlParams = new URLSearchParams(window.location.search);
+      const serviceParam = urlParams.get('service');
+      if (serviceParam) {
+        const s = serviceParam.charAt(0).toUpperCase() + serviceParam.slice(1);
+        // match to select
+        const options = serviceSelect.options;
+        for (let opt of options) {
+          if (opt.value.toLowerCase() === s.toLowerCase()) {
+            serviceSelect.value = opt.value;
+            break;
+          }
+        }
+        // open panel after a tiny delay
+        setTimeout(() => openPanel(serviceSelect.value), 200);
+      }
+    })();
+  </script>
+</body>
+</html>
